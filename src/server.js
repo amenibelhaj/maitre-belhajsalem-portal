@@ -1,10 +1,11 @@
+// server.js
 const dotenv = require("dotenv");
 const app = require("./app");
 const sequelize = require("./config/db");
 const http = require("http");
 const { Server } = require("socket.io");
 
-//  import models so they register with Sequelize
+// Import models so they register with Sequelize
 require("./models/User");
 require("./models/Reminder");
 require("./models/Client");
@@ -43,12 +44,12 @@ io.on("connection", (socket) => {
     await sequelize.authenticate();
     console.log("Database connected");
 
-    // sync models (User + Reminder)
-    await sequelize.sync({ alter: true });
-    console.log(" Database synced");
+    // ⚠️ Development/testing: drop & recreate all tables to apply new fields
+    await sequelize.sync({ force: true });
+    console.log("Database synced (all tables recreated)");
 
-    server.listen(PORT, () => console.log(` Server running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (err) {
-    console.error(" Unable to connect to the database:", err);
+    console.error("Unable to connect to the database:", err);
   }
 })();
