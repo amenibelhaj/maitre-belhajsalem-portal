@@ -7,18 +7,15 @@ exports.createCase = async (req, res) => {
   try {
     const { title, description, courtDate, status, clientId, sessions, actions, outcome } = req.body;
 
-    // Only lawyers can create cases
     if (req.user.role !== "lawyer") {
       return res.status(403).json({ message: "Only lawyers can create cases" });
     }
 
-    // Verify client exists and belongs to this lawyer
     const client = await Client.findByPk(clientId);
     if (!client || client.lawyerId !== req.user.id) {
       return res.status(404).json({ message: "Client not found or not yours" });
     }
 
-    // Create the case
     const newCase = await Case.create({
       title,
       description,
@@ -31,7 +28,6 @@ exports.createCase = async (req, res) => {
       lawyerId: req.user.id,
     });
 
-    // Fetch the case with client info included
     const fullCase = await Case.findByPk(newCase.id, {
       include: [
         { model: Client, as: "client", attributes: ["id", "name", "email", "phone"] },
@@ -79,8 +75,69 @@ exports.getCaseById = async (req, res) => {
 
     if (!foundCase) return res.status(404).json({ message: "Case not found" });
 
+    // Only the lawyer who owns the case can view
+    if (foundCase.lawyerId !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to view this case" });
+    }
+
     res.json(foundCase);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔹 Update a case
+exports.updateCase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const foundCase = await Case.findByPk(id);
+    if (!foundCase) return res.status(404).json({ message: "Case not found" });
+
+    if (foundCase.lawyerId !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to update this case" });
+    }
+
+    const { title, description, courtDate, status, sessions, actions, outcome } = req.body;
+
+    await foundCase.update({
+      title: title ?? foundCase.title,
+      description: description ?? foundCase.description,
+      courtDate: courtDate ?? foundCase.courtDate,
+      status: status ?? foundCase.status,
+      sessions: sessions ?? foundCase.sessions,
+      actions: actions ?? foundCase.actions,
+      outcome: outcome ?? foundCase.outcome,
+    });
+
+    const updatedCase = await Case.findByPk(id, {
+      include: [
+        { model: Client, as: "client", attributes: ["id", "name", "email", "phone"] },
+        { model: User, as: "lawyer", attributes: ["id", "name", "email"] },
+      ],
+    });
+
+    res.json({ message: "Case updated successfully", case: updatedCase });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔹 Delete a case
+exports.deleteCase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const foundCase = await Case.findByPk(id);
+    if (!foundCase) return res.status(404).json({ message: "Case not found" });
+
+    if (foundCase.lawyerId !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to delete this case" });
+    }
+
+    await foundCase.destroy();
+    res.json({ message: "Case deleted successfully" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
