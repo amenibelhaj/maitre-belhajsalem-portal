@@ -1,4 +1,5 @@
 const Reminder = require("../models/Reminder");
+const Client = require("../models/Client");
 
 // 🔹 Create reminder (Lawyer only)
 exports.createReminder = async (req, res) => {
@@ -27,14 +28,21 @@ exports.createReminder = async (req, res) => {
   }
 };
 
-// 🔹 Get reminders for logged-in user
+// 🔹 Get reminders for logged-in user (lawyer or client)
 exports.getReminders = async (req, res) => {
   try {
     let reminders;
     if (req.user.role === "lawyer") {
       reminders = await Reminder.findAll({ where: { lawyerId: req.user.id } });
     } else if (req.user.role === "client") {
-      reminders = await Reminder.findAll({ where: { recipientId: req.user.id } });
+      // Map JWT user → client
+      const client = await Client.findOne({ where: { email: req.user.email } });
+      if (!client) return res.status(404).json({ message: "Client not found" });
+
+      reminders = await Reminder.findAll({
+        where: { recipientId: client.id },
+        order: [["createdAt", "DESC"]],
+      });
     } else {
       return res.status(403).json({ message: "Unauthorized role" });
     }
@@ -86,5 +94,28 @@ exports.deleteReminder = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error deleting reminder", error: error.message });
+  }
+};
+
+// 🔹 Get reminders for logged-in client
+exports.getClientReminders = async (req, res) => {
+  try {
+    if (req.user.role !== "client") {
+      return res.status(403).json({ message: "Only clients can view their reminders" });
+    }
+
+    // Map JWT user → client
+    const client = await Client.findOne({ where: { email: req.user.email } });
+    if (!client) return res.status(404).json({ message: "Client not found" });
+
+    const reminders = await Reminder.findAll({
+      where: { recipientId: client.id },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json(reminders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching client reminders", error: error.message });
   }
 };

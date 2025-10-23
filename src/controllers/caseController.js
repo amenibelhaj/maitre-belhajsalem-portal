@@ -141,3 +141,30 @@ exports.deleteCase = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// 🔹 Get all cases for logged-in client
+
+exports.getMyCases = async (req, res) => {
+
+  try {
+    if (req.user.role !== "client") {
+      return res.status(403).json({ message: "Only clients can view their cases" });
+    }
+
+    // Match by email, since client email is tied to user email
+    const client = await Client.findOne({ where: { email: req.user.email } });
+    if (!client) return res.status(404).json({ message: "Client not found" });
+
+    const cases = await Case.findAll({
+      where: { clientId: client.id },
+      include: [
+        { model: Client, as: "client", attributes: ["id", "name", "email", "phone"] },
+        { model: User, as: "lawyer", attributes: ["id", "name", "email"] },
+      ],
+    });
+
+    res.json(cases);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
