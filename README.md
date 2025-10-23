@@ -1,4 +1,4 @@
-hell# Lawyer-Client Portal (PFA Project)
+Lawyer-Client Portal (PFA Project)
 
 **Author:** Ameni Belhaj  
 **Projet:** Projet de Fin d’Année (PFA)  
@@ -53,26 +53,3 @@ A full-stack application for lawyers and clients to manage cases and reminders e
 
 ---
 
-## Project Structure
-
-/maitre-belhajsalem-portal
-│
-├─ frontend/ # React frontend
-│ ├─ src/
-│ ├─ public/
-│ ├─ package.json
-│
-├─ lawyer-client-backend/ # Node.js backend
-│ ├─ src/
-│ │ ├─ controllers/
-│ │ ├─ models/
-│ │ ├─ routes/
-│ │ ├─ middlewares/
-│ │ ├─ config/
-│ │ ├─ utils/
-│ │ └─ server.js
-│ ├─ package.json
-│ └─ .env
-│
-├─ README.md
-└─ .gitignore
