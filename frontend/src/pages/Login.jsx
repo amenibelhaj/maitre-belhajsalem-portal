@@ -13,11 +13,23 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await API.post("/auth/login", { email, password });
+
+      // store user data in localStorage
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userName", res.data.user.name);
       localStorage.setItem("role", res.data.user.role);
-      navigate("/lawyer");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // redirect based on user role
+      if (res.data.user.role === "lawyer") {
+        navigate("/lawyer");
+      } else if (res.data.user.role === "client") {
+        navigate("/client");
+      } else {
+        navigate("/"); // fallback if no recognized role
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setError("Invalid credentials. Please try again.");
     }
   };
@@ -29,23 +41,30 @@ export default function Login() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-bold mb-4 text-blue-700">⚖️ Lawyer Portal Login</h1>
+        <h1 className="text-2xl font-bold mb-4 text-blue-700">
+          ⚖️ Portal Login
+        </h1>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
-            className="w-full border p-3 rounded-lg"
+            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full border p-3 rounded-lg"
+            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
@@ -53,6 +72,7 @@ export default function Login() {
             Login
           </button>
         </form>
+
         <p className="mt-4 text-sm text-gray-600">
           Don’t have an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
