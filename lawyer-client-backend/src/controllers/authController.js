@@ -35,16 +35,33 @@ exports.registerUser = async (req, res) => {
 // Login user
 exports.loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    const { id, email, password } = req.body;
+
+    if ((!id && !email) || !password) {
+      return res.status(400).json({ message: "ID or email and password are required" });
     }
 
-    const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    let user;
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (id) {
+      const userId = Number(id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      // ✅ Look in the User table, not Client
+      user = await User.findOne({ where: { id: userId } });
+    } else {
+      user = await User.findOne({ where: { email } });
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       { id: user.id, role: user.role },

@@ -43,7 +43,7 @@ exports.createClient = async (req, res) => {
       message: "Client and user account created successfully",
       client,
       credentials: {
-        email,
+          id: user.id,  
         password: plainPassword, // lawyer sees this to give client
       },
     });
