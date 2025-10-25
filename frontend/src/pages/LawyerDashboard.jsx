@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { io } from "socket.io-client";
+import AddClientModal from "./AddClientModal"; 
 
 export default function LawyerDashboard() {
   const [clients, setClients] = useState([]);
@@ -11,6 +12,7 @@ export default function LawyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [showCaseForm, setShowCaseForm] = useState(false);
   const [editingCase, setEditingCase] = useState(null);
+  const [showAddClientForm, setShowAddClientForm] = useState(false);
 
   const [reminders, setReminders] = useState([]); // <-- for reminders
   const [reminderForm, setReminderForm] = useState({ title: "", description: "" });
@@ -242,6 +244,28 @@ export default function LawyerDashboard() {
           Logout
         </button>
       </div>
+       {/* Top Dashboard Buttons */}
+  <div className="flex items-center gap-3 mb-6">
+    <button
+      onClick={() => setShowAddClientForm(true)}
+      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg shadow"
+    >
+      ➕ إضافة حريف جديد
+    </button>
+
+    <button
+      onClick={async () => {
+        await fetchClients();
+        if (selectedClient) await fetchClientCases(selectedClient.id);
+        await fetchReminders();
+      }}
+      className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
+    >
+      تحديث
+    </button>
+  </div>
+
+
 
       <div className="grid grid-cols-3 gap-6">
         {/* Clients List */}
@@ -268,6 +292,7 @@ export default function LawyerDashboard() {
             ))
           )}
         </div>
+      
 
         {/* Cases + Reminders */}
         <div className="col-span-2 bg-white rounded-2xl shadow-lg p-6 overflow-y-auto max-h-[80vh]">
@@ -581,6 +606,15 @@ export default function LawyerDashboard() {
             </form>
           </motion.div>
         </motion.div>
+              )}
+
+      {/* Add Client Modal */}
+      {showAddClientForm && (
+        <AddClientModal
+          axiosConfig={axiosConfig}
+          onClose={() => setShowAddClientForm(false)}
+          onClientAdded={fetchClients}
+        />
       )}
     </div>
   );

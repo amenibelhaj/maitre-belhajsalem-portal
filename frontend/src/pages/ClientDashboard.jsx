@@ -7,23 +7,24 @@ export default function ClientDashboard() {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cases");
-  const [clientName, setClientName] = useState("");
+
+  // ✅ Get client name directly from localStorage
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+  const [clientName, setClientName] = useState(user.name || "");
 
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // 🔹 Fetch client data, cases, and reminders
+  // 🔹 Fetch client cases and reminders only
   const fetchClientData = async () => {
     try {
-      const [casesRes, remindersRes, profileRes] = await Promise.all([
+      const [casesRes, remindersRes] = await Promise.all([
         axios.get("http://localhost:5000/api/clients/me/cases", axiosConfig),
         axios.get("http://localhost:5000/api/clients/me/reminders", axiosConfig),
-        axios.get("http://localhost:5000/api/users/me", axiosConfig).catch(() => null),
       ]);
 
       setCases(casesRes.data || []);
       setReminders(remindersRes.data || []);
-      setClientName(profileRes?.data?.name || "العميل");
     } catch (err) {
       console.error("Error fetching client dashboard data:", err);
     } finally {
@@ -37,6 +38,7 @@ export default function ClientDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
@@ -116,17 +118,14 @@ export default function ClientDashboard() {
                         <p className="text-gray-700 mt-1">{c.description}</p>
                         <p className="mt-1">
                           <span className="font-semibold">📅 التاريخ:</span>{" "}
-                          {c.courtDate
-                            ? new Date(c.courtDate).toLocaleDateString()
-                            : "-"}
+                          {c.courtDate ? new Date(c.courtDate).toLocaleDateString() : "-"}
                         </p>
                         <p className="mt-1">
                           <span className="font-semibold">📊 الحالة:</span>{" "}
                           {c.status}
                         </p>
                         <p className="mt-1">
-                          <span className="font-semibold">النتيجة:</span>{" "}
-                          {c.outcome || "-"}
+                          <span className="font-semibold">النتيجة:</span> {c.outcome || "-"}
                         </p>
                       </div>
                     </div>
@@ -134,9 +133,7 @@ export default function ClientDashboard() {
                     {/* Sessions */}
                     {c.sessions && c.sessions.length > 0 && (
                       <div className="mt-4">
-                        <h4 className="font-semibold text-gray-800 mb-2">
-                          📅 الجلسات:
-                        </h4>
+                        <h4 className="font-semibold text-gray-800 mb-2">📅 الجلسات:</h4>
                         <ul className="list-disc ml-6 text-gray-700">
                           {c.sessions.map((s, i) => (
                             <li key={i}>
@@ -150,9 +147,7 @@ export default function ClientDashboard() {
                     {/* Actions */}
                     {c.actions && c.actions.length > 0 && (
                       <div className="mt-3">
-                        <h4 className="font-semibold text-gray-800 mb-2">
-                          ⚖️ الإجراءات:
-                        </h4>
+                        <h4 className="font-semibold text-gray-800 mb-2">⚖️ الإجراءات:</h4>
                         <ul className="list-disc ml-6 text-gray-700">
                           {c.actions.map((a, i) => (
                             <li key={i}>
@@ -174,9 +169,7 @@ export default function ClientDashboard() {
               🔔 التذكيرات
             </h2>
             {reminders.length === 0 ? (
-              <p className="text-center text-gray-500 mt-8">
-                لا توجد تذكيرات حالياً.
-              </p>
+              <p className="text-center text-gray-500 mt-8">لا توجد تذكيرات حالياً.</p>
             ) : (
               <div className="space-y-4">
                 {reminders.map((r) => (

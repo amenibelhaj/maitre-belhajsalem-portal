@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import API from "../api";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [emailOrId, setEmailOrId] = useState(""); // can be email (lawyer) or ID (client)
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -12,7 +12,16 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", { email, password });
+      let payload = { password };
+
+      // decide if client ID (number) or email
+      if (/^\d+$/.test(emailOrId)) {
+        payload.id = Number(emailOrId); // client login by ID
+      } else {
+        payload.email = emailOrId; // lawyer login by email
+      }
+
+      const res = await API.post("/auth/login", payload);
 
       // store user data in localStorage
       localStorage.setItem("token", res.data.token);
@@ -30,7 +39,7 @@ export default function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Invalid credentials. Please try again.");
+      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
     }
   };
 
@@ -47,11 +56,11 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="email"
-            placeholder="Email"
+            type="text"
+            placeholder="Email or Client ID"
             className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={emailOrId}
+            onChange={(e) => setEmailOrId(e.target.value)}
             required
           />
           <input
