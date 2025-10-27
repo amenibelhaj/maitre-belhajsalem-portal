@@ -8,14 +8,13 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cases");
 
-  // ✅ Get client name directly from localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [clientName, setClientName] = useState(user.name || "");
+  const [lawyerName, setLawyerName] = useState("");
 
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // 🔹 Fetch client cases and reminders only
   const fetchClientData = async () => {
     try {
       const [casesRes, remindersRes] = await Promise.all([
@@ -25,6 +24,15 @@ export default function ClientDashboard() {
 
       setCases(casesRes.data || []);
       setReminders(remindersRes.data || []);
+
+      // Fetch lawyer name from first case if available
+      if (casesRes.data && casesRes.data.length > 0 && casesRes.data[0].lawyerId) {
+        const lawyerRes = await axios.get(
+          `http://localhost:5000/api/lawyers/${casesRes.data[0].lawyerId}`,
+          axiosConfig
+        );
+        setLawyerName(lawyerRes.data.name);
+      }
     } catch (err) {
       console.error("Error fetching client dashboard data:", err);
     } finally {
@@ -50,9 +58,16 @@ export default function ClientDashboard() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold text-blue-700 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-blue-700">
           👋 مرحبًا <span className="text-blue-900">{clientName}</span>
         </h1>
+
+        {lawyerName && (
+          <span className="text-lg text-blue-600 flex items-center gap-1">
+            ⚖️ {lawyerName}
+          </span>
+        )}
+
         <button
           onClick={handleLogout}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md"
@@ -101,9 +116,7 @@ export default function ClientDashboard() {
               ⚖️ القضايا
             </h2>
             {cases.length === 0 ? (
-              <p className="text-center text-gray-500 mt-8">
-                لا توجد قضايا مضافة بعد.
-              </p>
+              <p className="text-center text-gray-500 mt-8">لا توجد قضايا مضافة بعد.</p>
             ) : (
               <div className="space-y-4">
                 {cases.map((c) => (
@@ -121,8 +134,7 @@ export default function ClientDashboard() {
                           {c.courtDate ? new Date(c.courtDate).toLocaleDateString() : "-"}
                         </p>
                         <p className="mt-1">
-                          <span className="font-semibold">📊 الحالة:</span>{" "}
-                          {c.status}
+                          <span className="font-semibold">📊 الحالة:</span> {c.status}
                         </p>
                         <p className="mt-1">
                           <span className="font-semibold">النتيجة:</span> {c.outcome || "-"}
@@ -163,7 +175,6 @@ export default function ClientDashboard() {
             )}
           </div>
         ) : (
-          // 🔔 Reminders Tab
           <div>
             <h2 className="text-2xl font-semibold text-green-700 mb-4 text-center">
               🔔 التذكيرات

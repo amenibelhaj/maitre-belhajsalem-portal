@@ -6,6 +6,9 @@ const userRoutes = require("./routes/userRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const clientRoutes = require("./routes/clientRoutes");
 const caseRoutes = require("./routes/caseRoutes");
+const lawyerRoutes = require("./routes/lawyerRoutes");
+
+
 
 const app = express();
 
@@ -19,5 +22,5 @@ app.use("/api/users", userRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/clients", clientRoutes); 
 app.use("/api/cases", caseRoutes);
-
+app.use("/api/lawyers", lawyerRoutes);
 module.exports = app;

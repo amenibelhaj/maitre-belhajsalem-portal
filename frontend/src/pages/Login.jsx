@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import API from "../api";
 
 export default function Login() {
-  const [emailOrId, setEmailOrId] = useState(""); // can be email (lawyer) or ID (client)
+  const [emailOrId, setEmailOrId] = useState(""); // email (lawyer) or ID (client)
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -29,14 +29,10 @@ export default function Login() {
       localStorage.setItem("role", res.data.user.role);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // redirect based on user role
-      if (res.data.user.role === "lawyer") {
-        navigate("/lawyer");
-      } else if (res.data.user.role === "client") {
-        navigate("/client");
-      } else {
-        navigate("/"); // fallback if no recognized role
-      }
+      // redirect based on role
+      if (res.data.user.role === "lawyer") navigate("/lawyer");
+      else if (res.data.user.role === "client") navigate("/client");
+      else navigate("/"); // fallback
     } catch (err) {
       console.error("Login error:", err);
       setError(err.response?.data?.message || "Invalid credentials. Please try again.");
@@ -50,14 +46,12 @@ export default function Login() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-bold mb-4 text-blue-700">
-          ⚖️ Portal Login
-        </h1>
+        <h1 className="text-2xl font-bold mb-4 text-blue-700">⚖️ Portal Login</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Email or Client ID"
+            placeholder="Email (Lawyer) or Client ID"
             className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
             value={emailOrId}
             onChange={(e) => setEmailOrId(e.target.value)}
@@ -83,9 +77,9 @@ export default function Login() {
         </form>
 
         <p className="mt-4 text-sm text-gray-600">
-          Don’t have an account?{" "}
+          Are you a lawyer?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
-            Register
+            Register here
           </Link>
         </p>
       </motion.div>
