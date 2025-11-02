@@ -107,23 +107,29 @@ export default function LawyerDashboard() {
   };
 
   // Send a new reminder
-  const handleSendReminder = async () => {
-    if (!selectedClient) return alert("اختر حريفًا لإرسال التذكير");
+const handleSendReminder = async () => {
+  if (!selectedClient) return alert("اختر حريفًا لإرسال التذكير");
 
-    try {
-      const res = await axios.post(
-        "http://localhost:5000/api/reminders",
-        { ...reminderForm, recipientId: selectedClient.id },
-        axiosConfig
-      );
-      // Already handled by real-time socket event
-      setReminderForm({ title: "", description: "" });
-      setShowReminderForm(false);
-    } catch (err) {
-      console.error("Error sending reminder:", err);
-      alert("فشل إرسال التذكير.");
-    }
-  };
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/reminders",
+      {
+        title: reminderForm.title,
+        description: reminderForm.description,
+        type: reminderForm.type || "normal", // send type to backend
+        recipientId: selectedClient.id,
+      },
+      axiosConfig
+    );
+
+    // Reset form
+    setReminderForm({ title: "", description: "", type: "normal" });
+    setShowReminderForm(false);
+  } catch (err) {
+    console.error("Error sending reminder:", err);
+    alert("فشل إرسال التذكير.");
+  }
+};
 
   // Case handlers (same as before)
   const handleInputChange = (e) => {
@@ -330,58 +336,88 @@ export default function LawyerDashboard() {
                 </button>
               </div>
 
-              {/* Reminder Form */}
-              {showReminderForm && (
-                <div className="bg-gray-100 p-4 rounded-xl mb-4">
-                  <input
-                    type="text"
-                    name="title"
-                    value={reminderForm.title}
-                    placeholder="عنوان التذكير"
-                    onChange={handleReminderChange}
-                    className="w-full p-2 border rounded mb-2"
-                  />
-                  <textarea
-                    name="description"
-                    value={reminderForm.description}
-                    placeholder="وصف التذكير"
-                    onChange={handleReminderChange}
-                    className="w-full p-2 border rounded mb-2"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      onClick={() => setShowReminderForm(false)}
-                      className="bg-gray-300 px-3 py-1 rounded"
-                    >
-                      إلغاء
-                    </button>
-                    <button
-                      onClick={handleSendReminder}
-                      className="bg-green-500 text-white px-3 py-1 rounded"
-                    >
-                      إرسال
-                    </button>
-                  </div>
-                </div>
-              )}
+{/* Reminder Form */}
+{showReminderForm && (
+  <div className="bg-gray-100 p-4 rounded-xl mb-4">
+    <input
+      type="text"
+      name="title"
+      value={reminderForm.title}
+      placeholder="عنوان التذكير"
+      onChange={handleReminderChange}
+      className="w-full p-2 border rounded mb-2"
+    />
+    <textarea
+      name="description"
+      value={reminderForm.description}
+      placeholder="وصف التذكير"
+      onChange={handleReminderChange}
+      className="w-full p-2 border rounded mb-2"
+    />
 
-              {/* Reminders List */}
-              {reminders.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-semibold mb-2">🔔 التذكيرات</h3>
-                  {reminders
-                    .filter((r) => r.recipientId === selectedClient.id || r.lawyerId === selectedClient.id)
-                    .map((r) => (
-                      <div
-                        key={r.id}
-                        className="border border-gray-300 rounded p-2 mb-2 bg-yellow-50"
-                      >
-                        <p className="font-medium">{r.title}</p>
-                        <p className="text-sm">{r.description}</p>
-                      </div>
-                    ))}
-                </div>
-              )}
+    {/* Type Selector */}
+    <select
+      name="type"
+      value={reminderForm.type || "normal"}
+      onChange={handleReminderChange}
+      className="w-full p-2 border rounded mb-2"
+    >
+      <option value="normal">تذكير عادي</option>
+      <option value="document_request">طلب مستند</option>
+    </select>
+
+    <div className="flex gap-2 justify-end">
+      <button
+        onClick={() => setShowReminderForm(false)}
+        className="bg-gray-300 px-3 py-1 rounded"
+      >
+        إلغاء
+      </button>
+      <button
+        onClick={handleSendReminder}
+        className="bg-green-500 text-white px-3 py-1 rounded"
+      >
+        إرسال
+      </button>
+    </div>
+  </div>
+)}
+
+
+{reminders.length > 0 && (
+  <div className="mb-6">
+    <h3 className="font-semibold mb-2">🔔 التذكيرات</h3>
+    {reminders
+      .filter((r) => r.recipientId === selectedClient.id || r.lawyerId === selectedClient.id)
+      .map((r) => (
+        <div
+          key={r.id}
+          className="border border-gray-300 rounded p-2 mb-2 bg-yellow-50 flex justify-between items-center"
+        >
+          <div>
+            <p className="font-medium">{r.title}</p>
+            <p className="text-sm">{r.description}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              النوع: {r.type === "normal" ? "تذكير عادي" : "طلب مستند"}
+            </p>
+          </div>
+
+          {/* If client uploaded a document, show download button */}
+          {r.documentUrl && (
+            <a
+              href={`http://localhost:5000/${r.documentUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+            >
+              ⬇️ تحميل المستند
+            </a>
+          )}
+        </div>
+      ))}
+  </div>
+)}
+
 
               {/* Cases List */}
               {cases.length === 0 ? (

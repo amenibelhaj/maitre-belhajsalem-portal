@@ -8,6 +8,7 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cases");
 
+  // Get the logged-in user from localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [clientName, setClientName] = useState(user.name || "");
   const [lawyerName, setLawyerName] = useState("");
@@ -15,17 +16,26 @@ export default function ClientDashboard() {
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
+  // Fetch client cases and reminders
   const fetchClientData = async () => {
     try {
-      const [casesRes, remindersRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/clients/me/cases", axiosConfig),
-        axios.get("http://localhost:5000/api/clients/me/reminders", axiosConfig),
-      ]);
-
+      // 1️⃣ Fetch cases
+      const casesRes = await axios.get(
+        "http://localhost:5000/api/clients/me/cases",
+        axiosConfig
+      );
       setCases(casesRes.data || []);
+
+      // 2️⃣ Fetch reminders using the credentials ID
+      // Make sure the backend returns reminders for the credentials ID
+      const credentialsId = user.id; // <-- this should be the login ID
+      const remindersRes = await axios.get(
+        `http://localhost:5000/api/reminders?recipientId=${credentialsId}`,
+        axiosConfig
+      );
       setReminders(remindersRes.data || []);
 
-      // Fetch lawyer name from first case if available
+      // 3️⃣ Fetch lawyer name if cases exist
       if (casesRes.data && casesRes.data.length > 0 && casesRes.data[0].lawyerId) {
         const lawyerRes = await axios.get(
           `http://localhost:5000/api/lawyers/${casesRes.data[0].lawyerId}`,

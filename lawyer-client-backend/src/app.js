@@ -23,4 +23,6 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/clients", clientRoutes); 
 app.use("/api/cases", caseRoutes);
 app.use("/api/lawyers", lawyerRoutes);
+app.use("/uploads", express.static("uploads"));
+
 module.exports = app;
