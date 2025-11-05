@@ -78,14 +78,19 @@ export default function LawyerDashboard() {
   };
 
   // Fetch reminders for selected client
-  const fetchReminders = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/reminders", axiosConfig);
-      setReminders(res.data);
-    } catch (err) {
-      console.error("Error fetching reminders:", err);
-    }
-  };
+ // Fetch reminders for a specific client
+const fetchReminders = async (clientId) => {
+  if (!clientId) return;
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/reminders?clientId=${clientId}`,
+      axiosConfig
+    );
+    setReminders(res.data);
+  } catch (err) {
+    console.error("Error fetching reminders:", err);
+  }
+};
 
   useEffect(() => {
     fetchClients();
@@ -96,6 +101,7 @@ export default function LawyerDashboard() {
   const handleClientSelect = (client) => {
     setSelectedClient(client);
     fetchClientCases(client.id);
+     fetchReminders(client.id); // fetch reminders only for this client
     setShowCaseForm(false);
     setEditingCase(null);
   };
@@ -117,11 +123,13 @@ const handleSendReminder = async () => {
         title: reminderForm.title,
         description: reminderForm.description,
         type: reminderForm.type || "normal", // send type to backend
-        recipientId: selectedClient.id,
+        recipientId: selectedClient.user.id,
+
       },
       axiosConfig
     );
-
+ // ✅ Add the new reminder to the state immediately
+    setReminders((prev) => [res.data.reminder, ...prev]);
     // Reset form
     setReminderForm({ title: "", description: "", type: "normal" });
     setShowReminderForm(false);
@@ -388,7 +396,7 @@ const handleSendReminder = async () => {
   <div className="mb-6">
     <h3 className="font-semibold mb-2">🔔 التذكيرات</h3>
     {reminders
-      .filter((r) => r.recipientId === selectedClient.id || r.lawyerId === selectedClient.id)
+      .filter((r) => r.recipientId === selectedClient.userId) // only reminders for this client
       .map((r) => (
         <div
           key={r.id}
@@ -402,7 +410,6 @@ const handleSendReminder = async () => {
             </p>
           </div>
 
-          {/* If client uploaded a document, show download button */}
           {r.documentUrl && (
             <a
               href={`http://localhost:5000/${r.documentUrl}`}
@@ -417,6 +424,7 @@ const handleSendReminder = async () => {
       ))}
   </div>
 )}
+
 
 
               {/* Cases List */}

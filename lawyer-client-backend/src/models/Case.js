@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
-const Client = require("./Client");
-const User = require("./User"); // lawyer
+
 
 const Case = sequelize.define("Case", {
   title: { type: DataTypes.STRING, allowNull: false },           // موضوع القضية
@@ -15,7 +14,6 @@ const Case = sequelize.define("Case", {
   lawyerId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-Case.belongsTo(Client, { foreignKey: "clientId", as: "client" });
-Case.belongsTo(User, { foreignKey: "lawyerId", as: "lawyer" });
+
 
 module.exports = Case;

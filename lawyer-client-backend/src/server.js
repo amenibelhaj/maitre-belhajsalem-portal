@@ -1,25 +1,19 @@
 // server.js
 const dotenv = require("dotenv");
+dotenv.config(); // ✅ must be before using process.env
+
 const app = require("./app");
-const sequelize = require("./config/db");
 const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
-
-// Import models so they register with Sequelize
-require("./models/User");
-require("./models/Reminder");
-require("./models/Client");
-require("./models/Case");
-
-dotenv.config();
+const { sequelize } = require("./models"); // ✅ single source of truth
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // Setup Socket.IO
 const io = new Server(server, {
-  cors: { origin: "*" }, // allow all origins, adjust in production
+  cors: { origin: "*" }, // allow all origins (adjust in production)
 });
 
 // Make io accessible in routes
@@ -55,11 +49,11 @@ io.on("connection", (socket) => {
     await sequelize.authenticate();
     console.log("Database connected");
 
-    // ⚠️ Development/testing: drop & recreate all tables to apply new fields
+    // ⚠️ DEVELOPMENT ONLY: Drop and recreate all tables
     await sequelize.sync({ alter: true });
-    console.log("Database synced");
+    console.log("✅ All tables dropped & recreated");
 
-    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (err) {
     console.error("Unable to connect to the database:", err);
   }

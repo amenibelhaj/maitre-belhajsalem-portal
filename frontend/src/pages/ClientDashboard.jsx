@@ -8,6 +8,11 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cases");
 
+  // New: selected files state for document uploads
+  const [selectedFiles, setSelectedFiles] = useState({});
+  const [uploadedReminders, setUploadedReminders] = useState({});
+  const [uploadProgress, setUploadProgress] = useState({});
+
   // Get the logged-in user from localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [clientName, setClientName] = useState(user.name || "");
@@ -26,11 +31,9 @@ export default function ClientDashboard() {
       );
       setCases(casesRes.data || []);
 
-      // 2️⃣ Fetch reminders using the credentials ID
-      // Make sure the backend returns reminders for the credentials ID
-      const credentialsId = user.id; // <-- this should be the login ID
+      // 2️⃣ Fetch reminders for the logged-in client
       const remindersRes = await axios.get(
-        `http://localhost:5000/api/reminders?recipientId=${credentialsId}`,
+        "http://localhost:5000/api/clients/me/reminders",
         axiosConfig
       );
       setReminders(remindersRes.data || []);
@@ -69,12 +72,12 @@ export default function ClientDashboard() {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-3xl font-bold text-blue-700">
-          👋 مرحبًا <span className="text-blue-900">{clientName}</span>
+           مرحبًا <span className="text-blue-900">{clientName}</span>
         </h1>
 
         {lawyerName && (
           <span className="text-lg text-blue-600 flex items-center gap-1">
-            ⚖️ {lawyerName}
+            ⚖️ maitre {lawyerName}
           </span>
         )}
 
@@ -153,7 +156,7 @@ export default function ClientDashboard() {
                     </div>
 
                     {/* Sessions */}
-                    {c.sessions && c.sessions.length > 0 && (
+                    {c.sessions?.length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-semibold text-gray-800 mb-2">📅 الجلسات:</h4>
                         <ul className="list-disc ml-6 text-gray-700">
@@ -167,7 +170,7 @@ export default function ClientDashboard() {
                     )}
 
                     {/* Actions */}
-                    {c.actions && c.actions.length > 0 && (
+                    {c.actions?.length > 0 && (
                       <div className="mt-3">
                         <h4 className="font-semibold text-gray-800 mb-2">⚖️ الإجراءات:</h4>
                         <ul className="list-disc ml-6 text-gray-700">
@@ -185,6 +188,7 @@ export default function ClientDashboard() {
             )}
           </div>
         ) : (
+          // Reminders Tab
           <div>
             <h2 className="text-2xl font-semibold text-green-700 mb-4 text-center">
               🔔 التذكيرات
@@ -201,7 +205,69 @@ export default function ClientDashboard() {
                   >
                     <h4 className="font-bold text-yellow-700">{r.title}</h4>
                     <p className="text-gray-700 mt-1">{r.description}</p>
-                  </motion.div>
+                    <p className="text-sm mt-1 text-gray-500">
+                      نوع التذكير: {r.type === "normal" ? "عادي" : "طلب مستند"}
+                    </p>
+
+                  {/* Document upload for document_request reminders */}
+{r.type === "document_request" && (
+  <div className="mt-2 flex gap-2 items-center">
+    <input
+      type="file"
+      onChange={(e) =>
+        setSelectedFiles((prev) => ({ ...prev, [r.id]: e.target.files[0] }))
+      }
+      className="border p-1 rounded-md"
+    />
+    <button
+      onClick={async () => {
+        const file = selectedFiles[r.id];
+        if (!file) return alert("اختر ملف أولاً");
+
+        try {
+          const formData = new FormData();
+          formData.append("document", file);
+
+          await axios.post(
+            `http://localhost:5000/api/reminders/${r.id}/upload`,
+            formData,
+            {
+              headers: {
+                ...axiosConfig.headers,
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          // Clear selected file and show success
+          setSelectedFiles((prev) => ({ ...prev, [r.id]: null }));
+          setUploadedReminders((prev) => ({ ...prev, [r.id]: true }));
+
+          // Refresh reminders to reflect changes
+          fetchClientData();
+
+          // Optional: hide success after 3 seconds
+          setTimeout(() => {
+            setUploadedReminders((prev) => ({ ...prev, [r.id]: false }));
+          }, 3000);
+        } catch (err) {
+          console.error("Upload failed:", err);
+          alert("فشل رفع المستند. حاول مرة أخرى.");
+        }
+      }}
+      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+    >
+      رفع المستند
+    </button>
+
+    {uploadedReminders[r.id] && (
+      <span className="text-green-600 text-sm ml-2">
+        تم رفع المستند بنجاح 
+      </span>
+    )}
+  </div>
+)}
+  </motion.div>
                 ))}
               </div>
             )}

@@ -16,6 +16,7 @@ const createReminder = async (req, res) => {
       recipientId,
       lawyerId: req.user.id,
       type: type || "normal", // default to normal if not provided
+     
     });
 
     // Notify client in real-time via Socket.IO
