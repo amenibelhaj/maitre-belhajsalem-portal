@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true,           // Allow access from outside container
+    host:  '0.0.0.0',         // Allow access from outside container
     port: 5173,           // Ensure same port as exposed
     strictPort: true,     // Prevent Vite from changing port
     watch: {

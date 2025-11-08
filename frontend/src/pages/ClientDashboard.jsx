@@ -211,22 +211,49 @@ export default function ClientDashboard() {
 
                   {/* Document upload for document_request reminders */}
 {r.type === "document_request" && (
-  <div className="mt-2 flex gap-2 items-center">
-    <input
-      type="file"
-      onChange={(e) =>
-        setSelectedFiles((prev) => ({ ...prev, [r.id]: e.target.files[0] }))
-      }
-      className="border p-1 rounded-md"
-    />
+  <div className="mt-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col md:flex-row items-center gap-4 justify-between">
+    
+    {/* File Selector */}
+    <div className="flex items-center gap-3 w-full md:w-auto">
+      <input
+        type="file"
+        id={`file-input-${r.id}`}
+        className="hidden"
+        onChange={(e) =>
+          setSelectedFiles((prev) => ({ ...prev, [r.id]: e.target.files[0] }))
+        }
+      />
+      <label
+        htmlFor={`file-input-${r.id}`}
+        className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+      >
+        <svg
+          className="w-5 h-5 text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12v8m0-8l-4 4m4-4l4 4" />
+        </svg>
+        اختر ملف
+        {selectedFiles[r.id] && (
+          <span className="text-sm text-gray-600 truncate max-w-xs">
+            {selectedFiles[r.id].name}
+          </span>
+        )}
+      </label>
+    </div>
+
+    {/* Upload Button */}
     <button
       onClick={async () => {
-        const file = selectedFiles[r.id];
-        if (!file) return alert("اختر ملف أولاً");
+        if (!selectedFiles[r.id]) return alert("اختر ملف أولاً");
+        const formData = new FormData();
+        formData.append("document", selectedFiles[r.id]);
 
         try {
-          const formData = new FormData();
-          formData.append("document", file);
+          setUploadProgress((prev) => ({ ...prev, [r.id]: 0 }));
 
           await axios.post(
             `http://localhost:5000/api/reminders/${r.id}/upload`,
@@ -236,37 +263,57 @@ export default function ClientDashboard() {
                 ...axiosConfig.headers,
                 "Content-Type": "multipart/form-data",
               },
+              onUploadProgress: (progressEvent) => {
+                const percent = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total
+                );
+                setUploadProgress((prev) => ({ ...prev, [r.id]: percent }));
+              },
             }
           );
 
-          // Clear selected file and show success
           setSelectedFiles((prev) => ({ ...prev, [r.id]: null }));
           setUploadedReminders((prev) => ({ ...prev, [r.id]: true }));
-
-          // Refresh reminders to reflect changes
           fetchClientData();
-
-          // Optional: hide success after 3 seconds
-          setTimeout(() => {
-            setUploadedReminders((prev) => ({ ...prev, [r.id]: false }));
-          }, 3000);
         } catch (err) {
-          console.error("Upload failed:", err);
-          alert("فشل رفع المستند. حاول مرة أخرى.");
+          alert("حدث خطأ أثناء رفع الملف");
+          console.error(err);
         }
       }}
-      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+      className="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg shadow-md transition-colors flex items-center gap-2"
     >
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12v8m0-8l-4 4m4-4l4 4" />
+      </svg>
       رفع المستند
     </button>
 
+    {/* Progress Bar */}
+    {uploadProgress[r.id] > 0 && uploadProgress[r.id] < 100 && (
+      <div className="w-full md:w-40 bg-gray-200 rounded-full h-2 overflow-hidden mt-2 md:mt-0">
+        <div
+          className="bg-green-500 h-2 rounded-full transition-all"
+          style={{ width: `${uploadProgress[r.id]}%` }}
+        ></div>
+      </div>
+    )}
+
+    {/* Success Message */}
     {uploadedReminders[r.id] && (
       <span className="text-green-600 text-sm ml-2">
-        تم رفع المستند بنجاح 
+        تم رفع المستند بنجاح ✅
       </span>
     )}
   </div>
 )}
+
+
   </motion.div>
                 ))}
               </div>
