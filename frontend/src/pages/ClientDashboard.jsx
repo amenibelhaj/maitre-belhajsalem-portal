@@ -8,12 +8,11 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cases");
 
-  // New: selected files state for document uploads
   const [selectedFiles, setSelectedFiles] = useState({});
   const [uploadedReminders, setUploadedReminders] = useState({});
   const [uploadProgress, setUploadProgress] = useState({});
 
-  // Get the logged-in user from localStorage
+ 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const [clientName, setClientName] = useState(user.name || "");
   const [lawyerName, setLawyerName] = useState("");
@@ -21,24 +20,24 @@ export default function ClientDashboard() {
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Fetch client cases and reminders
+  
   const fetchClientData = async () => {
     try {
-      // 1️⃣ Fetch cases
+    
       const casesRes = await axios.get(
         "http://localhost:5000/api/clients/me/cases",
         axiosConfig
       );
       setCases(casesRes.data || []);
 
-      // 2️⃣ Fetch reminders for the logged-in client
+      
       const remindersRes = await axios.get(
         "http://localhost:5000/api/clients/me/reminders",
         axiosConfig
       );
       setReminders(remindersRes.data || []);
 
-      // 3️⃣ Fetch lawyer name if cases exist
+      
       if (casesRes.data && casesRes.data.length > 0 && casesRes.data[0].lawyerId) {
         const lawyerRes = await axios.get(
           `http://localhost:5000/api/lawyers/${casesRes.data[0].lawyerId}`,
@@ -65,7 +64,7 @@ export default function ClientDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8 font-sans">
-      {/* Header */}
+      
       <motion.div
         className="flex justify-between items-center mb-10"
         initial={{ opacity: 0, y: -20 }}
@@ -89,7 +88,7 @@ export default function ClientDashboard() {
         </button>
       </motion.div>
 
-      {/* Tabs */}
+      
       <div className="flex justify-center gap-4 mb-8">
         <button
           onClick={() => setActiveTab("cases")}
@@ -113,7 +112,7 @@ export default function ClientDashboard() {
         </button>
       </div>
 
-      {/* Content */}
+      
       <motion.div
         key={activeTab}
         initial={{ opacity: 0, y: 10 }}
@@ -155,7 +154,7 @@ export default function ClientDashboard() {
                       </div>
                     </div>
 
-                    {/* Sessions */}
+                    
                     {c.sessions?.length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-semibold text-gray-800 mb-2">📅 الجلسات:</h4>
@@ -169,7 +168,7 @@ export default function ClientDashboard() {
                       </div>
                     )}
 
-                    {/* Actions */}
+                    
                     {c.actions?.length > 0 && (
                       <div className="mt-3">
                         <h4 className="font-semibold text-gray-800 mb-2">⚖️ الإجراءات:</h4>
@@ -188,7 +187,7 @@ export default function ClientDashboard() {
             )}
           </div>
         ) : (
-          // Reminders Tab
+          
           <div>
             <h2 className="text-2xl font-semibold text-green-700 mb-4 text-center">
               🔔 التذكيرات
@@ -209,11 +208,11 @@ export default function ClientDashboard() {
                       نوع التذكير: {r.type === "normal" ? "عادي" : "طلب مستند"}
                     </p>
 
-                  {/* Document upload for document_request reminders */}
+                  
 {r.type === "document_request" && (
   <div className="mt-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col md:flex-row items-center gap-4 justify-between">
     
-    {/* File Selector */}
+  
     <div className="flex items-center gap-3 w-full md:w-auto">
       <input
         type="file"
@@ -245,7 +244,7 @@ export default function ClientDashboard() {
       </label>
     </div>
 
-    {/* Upload Button */}
+  
     <button
       onClick={async () => {
         if (!selectedFiles[r.id]) return alert("اختر ملف أولاً");
@@ -294,7 +293,7 @@ export default function ClientDashboard() {
       رفع المستند
     </button>
 
-    {/* Progress Bar */}
+   
     {uploadProgress[r.id] > 0 && uploadProgress[r.id] < 100 && (
       <div className="w-full md:w-40 bg-gray-200 rounded-full h-2 overflow-hidden mt-2 md:mt-0">
         <div
@@ -304,7 +303,7 @@ export default function ClientDashboard() {
       </div>
     )}
 
-    {/* Success Message */}
+    
     {uploadedReminders[r.id] && (
       <span className="text-green-600 text-sm ml-2">
         تم رفع المستند بنجاح ✅

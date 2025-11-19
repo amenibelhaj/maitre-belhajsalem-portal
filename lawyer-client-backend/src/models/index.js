@@ -5,7 +5,7 @@ const Case = require("./Case");
 const Reminder = require("./Reminder");
 console.log({ User: !!User, Client: !!Client, Case: !!Case, Reminder: !!Reminder });
 
-// Associations
+
 User.hasMany(Client, { as: "clients", foreignKey: "lawyerId" });
 Client.belongsTo(User, { as: "lawyer", foreignKey: "lawyerId" });
 
@@ -22,5 +22,5 @@ Reminder.belongsTo(User, { as: "recipient", foreignKey: "recipientId" });
 User.hasMany(Reminder, { as: "sentReminders", foreignKey: "senderId" });
 User.hasMany(Reminder, { as: "receivedReminders", foreignKey: "recipientId" });
 
-// Export everything cleanly
+
 module.exports = { sequelize, User, Client, Case, Reminder };

@@ -4,27 +4,27 @@ const User = require("../models/User");
 const Reminder = require("../models/Reminder");
 const bcrypt = require("bcryptjs");
 
-// 🔹 Create a new client + linked user account
+
 exports.createClient = async (req, res) => {
   try {
     const { name, email, phone } = req.body;
 
-    // only lawyers can create clients
+   
     if (req.user.role !== "lawyer") {
       return res.status(403).json({ message: "Only lawyers can add clients" });
     }
 
-    // check if email already used
+    
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    // generate random password
+    
     const plainPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    // create user for the client
+   
     const user = await User.create({
       name,
       email,
@@ -32,7 +32,6 @@ exports.createClient = async (req, res) => {
       role: "client",
     });
 
-    // create client record linked to lawyer
     const client = await Client.create({
       name,
       email,
@@ -46,7 +45,7 @@ exports.createClient = async (req, res) => {
       client,
       credentials: {
         id: user.id,
-        password: plainPassword, // lawyer sees this to give client
+        password: plainPassword, 
       },
     });
   } catch (err) {
@@ -55,7 +54,7 @@ exports.createClient = async (req, res) => {
   }
 };
 
-// 🔹 Get all clients of logged-in lawyer
+
 exports.getClients = async (req, res) => {
   try {
     if (req.user.role !== "lawyer") {
@@ -68,7 +67,7 @@ exports.getClients = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "name", "email"], // client user info (for reminders)
+          attributes: ["id", "name", "email"], 
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -81,7 +80,7 @@ exports.getClients = async (req, res) => {
   }
 };
 
-// 🔹 Get client details with their cases
+
 exports.getClientDetails = async (req, res) => {
   try {
     const client = await Client.findByPk(req.params.id, { include: Case });
@@ -92,7 +91,7 @@ exports.getClientDetails = async (req, res) => {
   }
 };
 
-// 🔹 Get logged-in client's own cases
+
 exports.getMyCases = async (req, res) => {
   try {
     if (req.user.role !== "client") {
@@ -114,7 +113,7 @@ exports.getMyCases = async (req, res) => {
   }
 };
 
-// 🔹 Get logged-in client's reminders
+
 exports.getMyReminders = async (req, res) => {
   try {
     if (req.user.role !== "client") {
@@ -122,7 +121,7 @@ exports.getMyReminders = async (req, res) => {
     }
 
     const reminders = await Reminder.findAll({
-      where: { recipientId: req.user.id }, // reminder linked to client’s userId
+      where: { recipientId: req.user.id }, 
       order: [["createdAt", "DESC"]],
     });
 

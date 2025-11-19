@@ -4,7 +4,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Protected profile route
+
 router.get("/profile", authMiddleware, (req, res) => {
   res.json({
     message: "Welcome to your profile!",

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 
-// GET /api/lawyers/:id
+
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);

@@ -6,7 +6,7 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("lawyer"); // default to lawyer
+  const [role, setRole] = useState("lawyer");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -16,10 +16,10 @@ export default function Register() {
         name,
         email,
         password,
-        role, // include role!
+        role, 
       });
       console.log(res.data);
-      alert("Registration successful!");
+      
       navigate("/login");
     } catch (err) {
       console.error(err);
@@ -60,14 +60,14 @@ export default function Register() {
           required
         />
 
-        {/* Optional: role selector */}
+        
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
           className="w-full p-3 border rounded"
         >
           <option value="lawyer">Lawyer</option>
-          <option value="client">Client</option>
+          
         </select>
 
         <button className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition">

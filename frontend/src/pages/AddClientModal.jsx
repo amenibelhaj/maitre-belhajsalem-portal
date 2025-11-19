@@ -9,7 +9,7 @@ export default function AddClientModal({ axiosConfig, onClose, onClientAdded }) 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [newClient, setNewClient] = useState(null);
-  const [showPassword, setShowPassword] = useState(false); // 👈 added
+  const [showPassword, setShowPassword] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function AddClientModal({ axiosConfig, onClose, onClientAdded }) 
 
       setNewClient({ id, password });
 
-      toast.success("✅ تم إنشاء الحريف بنجاح! تم نسخ المعرف وكلمة المرور.", {
+      toast.success(" تم إنشاء الحريف بنجاح! تم نسخ المعرف وكلمة المرور.", {
         position: "top-right",
         autoClose: 5000,
       });
@@ -89,13 +89,12 @@ export default function AddClientModal({ axiosConfig, onClose, onClientAdded }) 
           </form>
         ) : (
           <div className="text-center space-y-3">
-            <p className="text-green-600 font-semibold">✅ تم إنشاء الحريف بنجاح</p>
+            <p className="text-green-600 font-semibold"> تم إنشاء الحريف بنجاح</p>
             <p>🆔 <strong>المعرّف:</strong> {newClient.id}</p>
 
-            {/* 👇 Password field with show/hide toggle */}
             <div className="flex items-center justify-center gap-2">
               <p>
-                🔑 <strong>كلمة المرور:</strong>{" "}
+                 <strong>كلمة المرور:</strong>{" "}
                 <input
                   type={showPassword ? "text" : "password"}
                   value={newClient.password}
@@ -112,7 +111,7 @@ export default function AddClientModal({ axiosConfig, onClose, onClientAdded }) 
               </button>
             </div>
 
-            <p className="text-sm text-gray-500">📋 تم نسخ المعلومات إلى الحافظة</p>
+            <p className="text-sm text-gray-500"> تم نسخ المعلومات إلى الحافظة</p>
 
             <button
               onClick={onClose}

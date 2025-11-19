@@ -14,9 +14,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan("dev")); // logs method, url, status, response time
+app.use(morgan("dev")); 
 
-// Routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reminders", reminderRoutes);

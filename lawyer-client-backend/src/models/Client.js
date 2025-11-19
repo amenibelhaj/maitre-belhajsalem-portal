@@ -7,6 +7,6 @@ const Client = sequelize.define("Client", {
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   phone: { type: DataTypes.STRING },
   lawyerId: { type: DataTypes.INTEGER, allowNull: false },
-   userId: { type: DataTypes.INTEGER, allowNull: false }, // 👈 add this
+   userId: { type: DataTypes.INTEGER, allowNull: false }, 
 });
 module.exports = Client;

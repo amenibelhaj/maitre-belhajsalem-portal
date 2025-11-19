@@ -1,4 +1,3 @@
-// frontend/src/pages/LawyerDashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -14,7 +13,7 @@ export default function LawyerDashboard() {
   const [editingCase, setEditingCase] = useState(null);
   const [showAddClientForm, setShowAddClientForm] = useState(false);
 
-  const [reminders, setReminders] = useState([]); // <-- for reminders
+  const [reminders, setReminders] = useState([]);
   const [reminderForm, setReminderForm] = useState({ title: "", description: "" });
   const [showReminderForm, setShowReminderForm] = useState(false);
 
@@ -31,7 +30,7 @@ export default function LawyerDashboard() {
   const token = localStorage.getItem("token");
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Setup Socket.IO connection
+  
   const [socket, setSocket] = useState(null);
   useEffect(() => {
     const newSocket = io("http://localhost:5000", {
@@ -39,7 +38,7 @@ export default function LawyerDashboard() {
     });
     setSocket(newSocket);
 
-    // Listen for new reminders in real-time
+  
     newSocket.on("newReminder", (reminder) => {
       setReminders((prev) => [reminder, ...prev]);
     });
@@ -47,13 +46,13 @@ export default function LawyerDashboard() {
     return () => newSocket.disconnect();
   }, [token]);
 
-  // Logout
+  
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
 
-  // Fetch all clients
+  
   const fetchClients = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/clients", axiosConfig);
@@ -65,7 +64,7 @@ export default function LawyerDashboard() {
     }
   };
 
-  // Fetch cases for a specific client
+  
   const fetchClientCases = async (clientId) => {
     try {
       const res = await axios.get("http://localhost:5000/api/cases", axiosConfig);
@@ -77,8 +76,8 @@ export default function LawyerDashboard() {
     }
   };
 
-  // Fetch reminders for selected client
- // Fetch reminders for a specific client
+  
+ 
 const fetchReminders = async (clientId) => {
   if (!clientId) return;
   try {
@@ -97,22 +96,22 @@ const fetchReminders = async (clientId) => {
     fetchReminders();
   }, []);
 
-  // Select a client
+  
   const handleClientSelect = (client) => {
     setSelectedClient(client);
     fetchClientCases(client.id);
-     fetchReminders(client.id); // fetch reminders only for this client
+     fetchReminders(client.id); 
     setShowCaseForm(false);
     setEditingCase(null);
   };
 
-  // Reminder form change
+
   const handleReminderChange = (e) => {
     const { name, value } = e.target;
     setReminderForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Send a new reminder
+
 const handleSendReminder = async () => {
   if (!selectedClient) return alert("اختر حريفًا لإرسال التذكير");
 
@@ -122,15 +121,15 @@ const handleSendReminder = async () => {
       {
         title: reminderForm.title,
         description: reminderForm.description,
-        type: reminderForm.type || "normal", // send type to backend
+        type: reminderForm.type || "normal", 
         recipientId: selectedClient.user.id,
 
       },
       axiosConfig
     );
- // ✅ Add the new reminder to the state immediately
+ 
     setReminders((prev) => [res.data.reminder, ...prev]);
-    // Reset form
+    
     setReminderForm({ title: "", description: "", type: "normal" });
     setShowReminderForm(false);
   } catch (err) {
@@ -139,7 +138,7 @@ const handleSendReminder = async () => {
   }
 };
 
-  // Case handlers (same as before)
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -242,7 +241,7 @@ const handleSendReminder = async () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header */}
+     
       <div className="flex justify-between items-center mb-8">
         <motion.h1
           className="text-3xl font-bold text-blue-700"
@@ -258,7 +257,7 @@ const handleSendReminder = async () => {
           Logout
         </button>
       </div>
-       {/* Top Dashboard Buttons */}
+       
   <div className="flex items-center gap-3 mb-6">
     <button
       onClick={() => setShowAddClientForm(true)}
@@ -282,7 +281,7 @@ const handleSendReminder = async () => {
 
 
       <div className="grid grid-cols-3 gap-6">
-        {/* Clients List */}
+        
         <div className="col-span-1 bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-700">📋 الحرفاء</h2>
           {loading ? (
@@ -308,7 +307,7 @@ const handleSendReminder = async () => {
         </div>
       
 
-        {/* Cases + Reminders */}
+       
         <div className="col-span-2 bg-white rounded-2xl shadow-lg p-6 overflow-y-auto max-h-[80vh]">
           {selectedClient ? (
             <>
@@ -344,7 +343,7 @@ const handleSendReminder = async () => {
                 </button>
               </div>
 
-{/* Reminder Form */}
+
 {showReminderForm && (
   <div className="bg-gray-100 p-4 rounded-xl mb-4">
     <input
@@ -363,7 +362,7 @@ const handleSendReminder = async () => {
       className="w-full p-2 border rounded mb-2"
     />
 
-    {/* Type Selector */}
+    
     <select
       name="type"
       value={reminderForm.type || "normal"}
@@ -396,7 +395,7 @@ const handleSendReminder = async () => {
   <div className="mb-6">
     <h3 className="font-semibold mb-2">🔔 التذكيرات</h3>
     {reminders
-      .filter((r) => r.recipientId === selectedClient.userId) // only reminders for this client
+      .filter((r) => r.recipientId === selectedClient.userId) 
       .map((r) => (
         <div
           key={r.id}
@@ -427,7 +426,7 @@ const handleSendReminder = async () => {
 
 
 
-              {/* Cases List */}
+              
               {cases.length === 0 ? (
                 <p className="text-gray-500 text-center mt-8">❗ لا توجد قضايا لهذا الحريف بعد.</p>
               ) : (
@@ -461,7 +460,7 @@ const handleSendReminder = async () => {
                       </div>
                     </div>
 
-                    {/* Sessions */}
+                    /* Sessions */
                     {c.sessions && c.sessions.length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-semibold">📅 الجلسات:</h4>
@@ -475,7 +474,7 @@ const handleSendReminder = async () => {
                       </div>
                     )}
 
-                    {/* Actions */}
+                  
                     {c.actions && c.actions.length > 0 && (
                       <div className="mt-3">
                         <h4 className="font-semibold">⚖️ الإجراءات:</h4>
@@ -498,7 +497,7 @@ const handleSendReminder = async () => {
         </div>
       </div>
 
-      {/* Case Form Modal */}
+    
       {showCaseForm && (
         <motion.div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
@@ -515,7 +514,7 @@ const handleSendReminder = async () => {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* same case form inputs as before */}
+             
               <input
                 type="text"
                 name="title"
@@ -559,8 +558,7 @@ const handleSendReminder = async () => {
                 className="w-full p-2 border rounded"
               />
 
-              {/* Sessions and Actions */}
-              {/* same as before */}
+            
               <div>
                 <h3 className="font-semibold mt-4">📅 الجلسات</h3>
                 {formData.sessions.map((s, i) => (
@@ -652,7 +650,7 @@ const handleSendReminder = async () => {
         </motion.div>
               )}
 
-      {/* Add Client Modal */}
+      
       {showAddClientForm && (
         <AddClientModal
           axiosConfig={axiosConfig}

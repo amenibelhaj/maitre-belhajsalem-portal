@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import API from "../api";
 
 export default function Login() {
-  const [emailOrId, setEmailOrId] = useState(""); // email (lawyer) or ID (client)
+  const [emailOrId, setEmailOrId] = useState(""); 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,25 +14,22 @@ export default function Login() {
     try {
       let payload = { password };
 
-      // decide if client ID (number) or email
       if (/^\d+$/.test(emailOrId)) {
-        payload.id = Number(emailOrId); // client login by ID
+        payload.id = Number(emailOrId);
       } else {
-        payload.email = emailOrId; // lawyer login by email
+        payload.email = emailOrId;
       }
 
       const res = await API.post("/auth/login", payload);
 
-      // store user data in localStorage
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userName", res.data.user.name);
       localStorage.setItem("role", res.data.user.role);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // redirect based on role
       if (res.data.user.role === "lawyer") navigate("/lawyer");
       else if (res.data.user.role === "client") navigate("/client");
-      else navigate("/"); // fallback
+      else navigate("/");
     } catch (err) {
       console.error("Login error:", err);
       setError(err.response?.data?.message || "Invalid credentials. Please try again.");
@@ -77,11 +74,15 @@ export default function Login() {
         </form>
 
         <p className="mt-4 text-sm text-gray-600">
-          Are you a lawyer?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register here
-          </Link>
-        </p>
+  Are you a lawyer?{" "}
+  <Link to="/register" className="text-blue-600 hover:underline">
+    Register here
+  </Link>
+</p>
+<p className="mt-2 text-sm text-gray-600">
+  Clients cannot register. Please contact your lawyer.
+</p>
+
       </motion.div>
     </div>
   );

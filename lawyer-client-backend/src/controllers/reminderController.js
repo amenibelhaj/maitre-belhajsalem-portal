@@ -1,7 +1,5 @@
 const Reminder = require("../models/Reminder");
 
-
-// 🔹 Create reminder (Lawyer only)
 const createReminder = async (req, res) => {
   try {
     const { title, description, recipientId, type } = req.body;
@@ -15,11 +13,11 @@ const createReminder = async (req, res) => {
       description,
       recipientId,
       lawyerId: req.user.id,
-      type: type || "normal", // default to normal if not provided
+      type: type || "normal",
      
     });
 
-    // Notify client in real-time via Socket.IO
+
     const io = req.app.get("io");
     io.to(`user_${recipientId}`).emit("newReminder", reminder);
 
@@ -30,7 +28,6 @@ const createReminder = async (req, res) => {
   }
 };
 
-// 🔹 Get reminders (for lawyer or client)
 const getReminders = async (req, res) => {
   try {
     let reminders;
@@ -49,7 +46,7 @@ const getReminders = async (req, res) => {
   }
 };
 
-// 🔹 Update reminder (Lawyer only)
+
 const updateReminder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,7 +70,7 @@ const updateReminder = async (req, res) => {
   }
 };
 
-// 🔹 Delete reminder (Lawyer only)
+
 const deleteReminder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -91,7 +88,7 @@ const deleteReminder = async (req, res) => {
     res.status(500).json({ message: "Error deleting reminder", error: error.message });
   }
 };
-// 🔹 Get reminders only for logged-in client
+
 const getClientReminders = async (req, res) => {
   try {
     if (req.user.role !== "client") {
@@ -110,7 +107,7 @@ const getClientReminders = async (req, res) => {
   }
 };
 
-// 🔹 Upload document (Client only)
+
 const uploadDocument = async (req, res) => {
   try {
     const { id } = req.params;
@@ -125,11 +122,11 @@ const uploadDocument = async (req, res) => {
 
     await reminder.update({ documentUrl: req.file.path });
 
-    // Notify lawyer via Socket.IO
+  
     const io = req.app.get("io");
     io.to(`user_${reminder.lawyerId}`).emit("documentUploaded", reminder);
 
-    // Client only gets success message
+  
     res.json({ message: "Document uploaded successfully" });
   } catch (error) {
     console.error(error);

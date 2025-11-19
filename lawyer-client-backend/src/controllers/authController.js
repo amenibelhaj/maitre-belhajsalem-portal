@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 require("dotenv").config();
 
-// Register a new user
+
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -32,7 +32,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// Login user
+
 exports.loginUser = async (req, res) => {
   try {
     const { id, email, password } = req.body;
@@ -48,7 +48,7 @@ exports.loginUser = async (req, res) => {
       if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid ID" });
       }
-      // ✅ Look in the User table, not Client
+      
       user = await User.findOne({ where: { id: userId } });
     } else {
       user = await User.findOne({ where: { email } });

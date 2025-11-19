@@ -2,7 +2,7 @@ const Case = require("../models/Case");
 const Client = require("../models/Client");
 const User = require("../models/User");
 
-// 🔹 Create a new case for a client
+
 exports.createCase = async (req, res) => {
   try {
     const { title, description, courtDate, status, clientId, sessions, actions, outcome } = req.body;
@@ -42,7 +42,7 @@ exports.createCase = async (req, res) => {
   }
 };
 
-// 🔹 Get all cases for logged-in lawyer
+
 exports.getCases = async (req, res) => {
   try {
     if (req.user.role !== "lawyer") {
@@ -63,7 +63,7 @@ exports.getCases = async (req, res) => {
   }
 };
 
-// 🔹 Get one case by ID
+
 exports.getCaseById = async (req, res) => {
   try {
     const foundCase = await Case.findByPk(req.params.id, {
@@ -75,7 +75,7 @@ exports.getCaseById = async (req, res) => {
 
     if (!foundCase) return res.status(404).json({ message: "Case not found" });
 
-    // Only the lawyer who owns the case can view
+
     if (foundCase.lawyerId !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to view this case" });
     }
@@ -86,7 +86,7 @@ exports.getCaseById = async (req, res) => {
   }
 };
 
-// 🔹 Update a case
+
 exports.updateCase = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,7 +123,7 @@ exports.updateCase = async (req, res) => {
   }
 };
 
-// 🔹 Delete a case
+
 exports.deleteCase = async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,7 +141,7 @@ exports.deleteCase = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-// 🔹 Get all cases for logged-in client
+
 
 exports.getMyCases = async (req, res) => {
 
@@ -150,7 +150,7 @@ exports.getMyCases = async (req, res) => {
       return res.status(403).json({ message: "Only clients can view their cases" });
     }
 
-    // Match by email, since client email is tied to user email
+
     const client = await Client.findOne({ where: { email: req.user.email } });
     if (!client) return res.status(404).json({ message: "Client not found" });
 

@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const User = require("./models/User");  // ← import the file directly
+const User = require("./models/User");  
 const sequelize = require("./config/db");
 
 async function seed() {

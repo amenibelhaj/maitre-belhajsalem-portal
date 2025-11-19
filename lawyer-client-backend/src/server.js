@@ -1,29 +1,28 @@
-// server.js
 const dotenv = require("dotenv");
-dotenv.config(); // ✅ must be before using process.env
+dotenv.config(); 
 
 const app = require("./app");
 const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
-const { sequelize } = require("./models"); // ✅ single source of truth
+const { sequelize } = require("./models"); 
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
-// Setup Socket.IO
+
 const io = new Server(server, {
-  cors: { origin: "*" }, // allow all origins (adjust in production)
+  cors: { origin: "*" }, 
 });
 
-// Make io accessible in routes
+
 app.set("io", io);
 
-// Handle WebSocket connections
+
 io.on("connection", (socket) => {
   console.log("A client connected");
 
-  // ⚡ Authenticate socket using JWT
+  
   const token = socket.handshake.auth.token;
   if (!token) return socket.disconnect();
 
@@ -31,7 +30,7 @@ io.on("connection", (socket) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    // Automatically join user-specific room
+    
     socket.join(`user_${userId}`);
     console.log(`User ${userId} connected and joined room user_${userId}`);
   } catch (err) {
@@ -49,11 +48,11 @@ io.on("connection", (socket) => {
     await sequelize.authenticate();
     console.log("Database connected");
 
-    // ⚠️ DEVELOPMENT ONLY: Drop and recreate all tables
+    
     await sequelize.sync({ alter: true });
-    console.log("✅ All tables dropped & recreated");
+    console.log(" All tables dropped & recreated");
 
-    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (err) {
     console.error("Unable to connect to the database:", err);
   }
